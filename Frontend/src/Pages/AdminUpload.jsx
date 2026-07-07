@@ -200,6 +200,7 @@ const AdminUpload = () => {
     code: '',
     price: '',
     category: 'Women',
+    collection: '',
     description: '',
     modelInfo: '',
   });
@@ -221,8 +222,8 @@ const AdminUpload = () => {
 
   // --- Category Collection Banners States ---
   const [dbCategoryBanners, setDbCategoryBanners] = useState([]);
-  const [pendingFiles, setPendingFiles] = useState({ Women: null, Men: null });
-  const [pendingPreviews, setPendingPreviews] = useState({ Women: null, Men: null });
+  const [pendingFiles, setPendingFiles] = useState({});
+  const [pendingPreviews, setPendingPreviews] = useState({});
 
   // No cropping session needed
 
@@ -663,6 +664,7 @@ const AdminUpload = () => {
     formData.append('code', productForm.code);
     formData.append('price', productForm.price);
     formData.append('category', productForm.category);
+    formData.append('collection', productForm.category === 'Collection' ? productForm.collection : '');
     formData.append('description', productForm.description);
     formData.append('modelInfo', productForm.modelInfo);
 
@@ -736,6 +738,7 @@ const AdminUpload = () => {
         code: '',
         price: '',
         category: 'Women',
+        collection: '',
         description: '',
         modelInfo: '',
       });
@@ -763,6 +766,7 @@ const AdminUpload = () => {
       code: prod.code,
       price: prod.price,
       category: prod.category,
+      collection: prod.collection || '',
       description: prod.description || '',
       modelInfo: prod.modelInfo || '',
     });
@@ -1472,6 +1476,7 @@ const AdminUpload = () => {
                           <option value="All">All Categories</option>
                           <option value="Women">Women</option>
                           <option value="Men">Men</option>
+                          <option value="Collection">Collection</option>
                         </select>
                       </div>
                     </div>
@@ -1525,10 +1530,17 @@ const AdminUpload = () => {
                                 {prod.code}
                               </td>
                               <td className="p-4 text-xs font-bold uppercase">
-                                <span className={`px-2 py-0.5 rounded ${prod.category === 'Women' ? 'bg-purple-50 text-purple-700 border border-purple-100' : 'bg-blue-50 text-blue-700 border border-blue-100'
-                                  }`}>
-                                  {prod.category}
-                                </span>
+                                 <span className={`px-2 py-0.5 rounded ${
+                                   prod.category === 'Women' 
+                                     ? 'bg-purple-50 text-purple-700 border border-purple-100' 
+                                     : prod.category === 'Men' 
+                                     ? 'bg-blue-50 text-blue-700 border border-blue-100'
+                                     : 'bg-amber-50 text-amber-700 border border-amber-100'
+                                 }`}>
+                                   {prod.category === 'Collection' && prod.collection 
+                                     ? `${prod.category} (${prod.collection})` 
+                                     : prod.category}
+                                 </span>
                               </td>
                               <td className="p-4 font-bold text-black">
                                 ${prod.price.toFixed(2)}
@@ -1590,7 +1602,7 @@ const AdminUpload = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Price (USD)</label>
                       <input
@@ -1614,8 +1626,29 @@ const AdminUpload = () => {
                       >
                         <option value="Women">Women</option>
                         <option value="Men">Men</option>
+                        <option value="Collection">Collection</option>
                       </select>
                     </div>
+                    {productForm.category === 'Collection' ? (
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Collection Type</label>
+                        <select
+                          name="collection"
+                          value={productForm.collection}
+                          onChange={handleProductChange}
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black focus:outline-none focus:border-black transition text-sm"
+                          required
+                        >
+                          <option value="">Select Collection...</option>
+                          <option value="Spring">Spring Collection</option>
+                          <option value="Summer">Summer Collection</option>
+                          <option value="Fall">Fall Collection</option>
+                          <option value="Winter">Winter Collection</option>
+                        </select>
+                      </div>
+                    ) : (
+                      <div className="hidden md:block" />
+                    )}
                   </div>
 
                   {/* Product Color & Size Stock Configuration */}
@@ -1838,7 +1871,7 @@ const AdminUpload = () => {
                         setShowProductForm(false);
                         setMessage({ type: '', text: '' });
 
-                        setProductForm({ name: '', code: '', price: '', category: 'Women', description: '', modelInfo: '' });
+                        setProductForm({ name: '', code: '', price: '', category: 'Women', collection: '', description: '', modelInfo: '' });
                         setColorsList([]);
                         setCardPreview('');
                         setDetailPreviews([]);
@@ -2174,6 +2207,115 @@ const AdminUpload = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Megamenu Dropdown Banners */}
+            <div className="space-y-6 pt-8 border-t border-gray-150">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-baseline gap-2">
+                <h4 className="text-base font-bold text-gray-900">3. Megamenu Dropdown Banners</h4>
+                <span className="text-xs text-gray-400 font-medium">Upload custom images to display when users hover over categories in the navigation bar.</span>
+              </div>
+
+              {[
+                {
+                  title: 'Women Dropdown Banners',
+                  items: [
+                    { key: 'women_tops', label: 'Tops & T-Shirts' },
+                    { key: 'women_hoodies', label: 'Hoodies & Sweatshirts' },
+                    { key: 'women_pants', label: 'Pants & Jeans' },
+                    { key: 'women_jackets', label: 'Jackets & Outerwear' }
+                  ]
+                },
+                {
+                  title: 'Men Dropdown Banners',
+                  items: [
+                    { key: 'men_tops', label: 'Tops & T-Shirts' },
+                    { key: 'men_hoodies', label: 'Hoodies & Sweatshirts' },
+                    { key: 'men_pants', label: 'Pants & Jeans' },
+                    { key: 'men_jackets', label: 'Jackets & Outerwear' }
+                  ]
+                },
+                {
+                  title: 'Collections Dropdown Banners',
+                  items: [
+                    { key: 'collections_spring', label: 'Spring Collection' },
+                    { key: 'collections_summer', label: 'Summer Collection' },
+                    { key: 'collections_fall', label: 'Fall Collection' },
+                    { key: 'collections_winter', label: 'Winter Collection' }
+                  ]
+                }
+              ].map((group, gIdx) => (
+                <div key={gIdx} className="space-y-4">
+                  <h5 className="text-sm font-bold text-neutral-700 border-b border-gray-100 pb-1.5">{group.title}</h5>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {group.items.map((item) => {
+                      const hasPending = !!pendingPreviews[item.key];
+                      const currentUrl = dbCategoryBanners.find(b => b.category === item.key)?.imageUrl;
+                      const displayUrl = pendingPreviews[item.key] || currentUrl;
+
+                      return (
+                        <div key={item.key} className="border border-gray-200 rounded-xl bg-white p-3 flex flex-col justify-between space-y-3">
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center text-xs font-bold text-neutral-800">
+                              <span>{item.label}</span>
+                            </div>
+
+                            <label className="cursor-pointer block aspect-[3/4] bg-gray-50 border border-dashed border-gray-200 hover:border-black rounded-lg overflow-hidden transition-colors relative flex items-center justify-center">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleFileSelect(e, item.key)}
+                                className="hidden"
+                                disabled={loading}
+                              />
+                              {displayUrl ? (
+                                <img src={displayUrl} alt={item.label} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="flex flex-col items-center justify-center text-gray-400 p-2 text-center">
+                                  <span className="text-xl mb-1">📷</span>
+                                  <span className="text-[10px] font-semibold text-black">Upload Image</span>
+                                  <span className="text-[8px] text-gray-400 mt-0.5">Click to choose file</span>
+                                </div>
+                              )}
+                            </label>
+                          </div>
+
+                          <div className="flex gap-1.5 pt-1.5">
+                            {hasPending ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => cancelPending(item.key)}
+                                  className="flex-1 py-1 px-2 border border-gray-200 hover:border-black text-black font-bold text-[10px] rounded transition uppercase tracking-wider bg-white cursor-pointer"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => saveCollection(item.key)}
+                                  disabled={loading}
+                                  className="flex-1 py-1 px-2 bg-black hover:bg-neutral-800 text-white font-bold text-[10px] rounded transition uppercase tracking-wider cursor-pointer shadow-sm"
+                                >
+                                  Save
+                                </button>
+                              </>
+                            ) : currentUrl ? (
+                              <button
+                                type="button"
+                                onClick={() => deleteCategoryBanner(item.key)}
+                                disabled={loading}
+                                className="w-full py-1 px-2 border border-gray-200 hover:border-red-500 hover:text-red-500 text-black font-bold text-[10px] rounded transition uppercase tracking-wider bg-white cursor-pointer"
+                              >
+                                Delete
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

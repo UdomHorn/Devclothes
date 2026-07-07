@@ -53,6 +53,10 @@ const Product = sequelize.define('Product', {
     type: DataTypes.JSONB,
     allowNull: false,
     defaultValue: {},
+  },
+  collection: {
+    type: DataTypes.STRING,
+    allowNull: true,
   }
 
 }, {

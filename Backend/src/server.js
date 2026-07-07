@@ -185,7 +185,7 @@ async function startServer() {
     console.log('✅ Connection to PostgreSQL has been established successfully.');
 
     // Sync database models
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
     console.log('✅ Database models synchronized with schema changes.');
 
     app.listen(PORT, () => {
