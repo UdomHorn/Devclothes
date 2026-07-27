@@ -25,6 +25,7 @@ const Nav = () => {
   const [hoveredSubcategory, setHoveredSubcategory] = useState('all');
   const [womenBanner, setWomenBanner] = useState("");
   const [menBanner, setMenBanner] = useState("");
+  const [navbarBanners, setNavbarBanners] = useState({});
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileAccordion, setMobileAccordion] = useState(null);
 
@@ -144,6 +145,31 @@ const Nav = () => {
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
+  const fetchCategoryBanners = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/banners/categories`);
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Map category banners to local map (lowercased keys)
+        const bannerMap = {};
+        data.forEach(item => {
+          if (item.category) {
+            bannerMap[item.category.toLowerCase()] = item.imageUrl;
+          }
+        });
+        setNavbarBanners(bannerMap);
+
+        const women = data.find(b => b.category === 'Women');
+        setWomenBanner(women ? women.imageUrl : "");
+        const men = data.find(b => b.category === 'Men');
+        setMenBanner(men ? men.imageUrl : "");
+      }
+    } catch (err) {
+      console.error('Failed to fetch category banners in nav:', err);
+    }
+  };
+
   // Fetch all products and category banners on mount
   useEffect(() => {
     const fetchAllProducts = async () => {
@@ -159,24 +185,16 @@ const Nav = () => {
       }
     };
 
-    const fetchCategoryBanners = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/api/banners/categories`);
-        if (response.ok) {
-          const data = await response.json();
-          const women = data.find(b => b.category === 'Women');
-          setWomenBanner(women ? women.imageUrl : "");
-          const men = data.find(b => b.category === 'Men');
-          setMenBanner(men ? men.imageUrl : "");
-        }
-      } catch (err) {
-        console.error('Failed to fetch category banners in nav:', err);
-      }
-    };
-
     fetchAllProducts();
     fetchCategoryBanners();
   }, []);
+
+  // Automatically fetch banners if dropdown opens and they haven't loaded yet
+  useEffect(() => {
+    if (activeDropdown && Object.keys(navbarBanners).length === 0) {
+      fetchCategoryBanners();
+    }
+  }, [activeDropdown]);
 
   // Click outside to close user dropdown
   useEffect(() => {
@@ -564,7 +582,7 @@ const Nav = () => {
                     <ul className="space-y-4">
                       <li>
                         <Link
-                          to="/collections"
+                          to="/collections?type=spring"
                           onClick={() => setActiveDropdown(null)}
                           onMouseEnter={() => setHoveredCollection('spring')}
                           className="text-[15px] text-neutral-500 hover:text-neutral-900 font-light tracking-wide transition-colors block font-inter"
@@ -574,7 +592,7 @@ const Nav = () => {
                       </li>
                       <li>
                         <Link
-                          to="/collections"
+                          to="/collections?type=summer"
                           onClick={() => setActiveDropdown(null)}
                           onMouseEnter={() => setHoveredCollection('summer')}
                           className="text-[15px] text-neutral-500 hover:text-neutral-900 font-light tracking-wide transition-colors block font-inter"
@@ -584,7 +602,7 @@ const Nav = () => {
                       </li>
                       <li>
                         <Link
-                          to="/collections"
+                          to="/collections?type=fall"
                           onClick={() => setActiveDropdown(null)}
                           onMouseEnter={() => setHoveredCollection('fall')}
                           className="text-[15px] text-neutral-500 hover:text-neutral-900 font-light tracking-wide transition-colors block font-inter"
@@ -594,7 +612,7 @@ const Nav = () => {
                       </li>
                       <li>
                         <Link
-                          to="/collections"
+                          to="/collections?type=winter"
                           onClick={() => setActiveDropdown(null)}
                           onMouseEnter={() => setHoveredCollection('winter')}
                           className="text-[15px] text-neutral-500 hover:text-neutral-900 font-light tracking-wide transition-colors block font-inter"
@@ -617,12 +635,12 @@ const Nav = () => {
                           transition={{ duration: 0.3, ease: 'easeInOut' }}
                           src={
                             hoveredCollection === 'spring'
-                              ? 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop'
+                              ? navbarBanners['collections_spring'] || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop'
                               : hoveredCollection === 'summer'
-                              ? 'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop'
+                              ? navbarBanners['collections_summer'] || 'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop'
                               : hoveredCollection === 'fall'
-                              ? 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=600&auto=format&fit=crop'
-                              : 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600&auto=format&fit=crop'
+                              ? navbarBanners['collections_fall'] || 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=600&auto=format&fit=crop'
+                              : navbarBanners['collections_winter'] || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600&auto=format&fit=crop'
                           }
                           alt={`${hoveredCollection} Collection Campaign`}
                           className="h-full w-full object-cover object-top"
@@ -695,21 +713,21 @@ const Nav = () => {
                               ? hoveredSubcategory === 'all'
                                 ? womenBanner || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600&auto=format&fit=crop'
                                 : hoveredSubcategory === 'tops'
-                                ? 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop'
+                                ? navbarBanners['women_tops'] || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop'
                                 : hoveredSubcategory === 'hoodies'
-                                ? 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop'
+                                ? navbarBanners['women_hoodies'] || 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop'
                                 : hoveredSubcategory === 'pants'
-                                ? 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=600&auto=format&fit=crop'
-                                : 'https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=600&auto=format&fit=crop'
+                                ? navbarBanners['women_pants'] || 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=600&auto=format&fit=crop'
+                                : navbarBanners['women_jackets'] || 'https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=600&auto=format&fit=crop'
                               : hoveredSubcategory === 'all'
                               ? menBanner || 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=600&auto=format&fit=crop'
                               : hoveredSubcategory === 'tops'
-                              ? 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=600&auto=format&fit=crop'
+                              ? navbarBanners['men_tops'] || 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=600&auto=format&fit=crop'
                               : hoveredSubcategory === 'hoodies'
-                              ? 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop'
+                              ? navbarBanners['men_hoodies'] || 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop'
                               : hoveredSubcategory === 'pants'
-                              ? 'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?q=80&w=600&auto=format&fit=crop'
-                              : 'https://images.unsplash.com/photo-1495105787522-5334e3ffa0ef?q=80&w=600&auto=format&fit=crop'
+                              ? navbarBanners['men_pants'] || 'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?q=80&w=600&auto=format&fit=crop'
+                              : navbarBanners['men_jackets'] || 'https://images.unsplash.com/photo-1495105787522-5334e3ffa0ef?q=80&w=600&auto=format&fit=crop'
                           }
                           alt={`${activeDropdown} Collection Campaign`}
                           className="h-full w-full object-cover object-top"
@@ -790,7 +808,7 @@ const Nav = () => {
                         {['Spring', 'Summer', 'Fall', 'Winter'].map((season) => (
                           <li key={season}>
                             <Link
-                              to="/collections"
+                              to={`/collections?type=${season.toLowerCase()}`}
                               onClick={closeMobileMenu}
                               className="block py-2 text-sm text-gray-500 hover:text-black transition-colors font-medium"
                             >

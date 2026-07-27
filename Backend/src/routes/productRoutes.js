@@ -31,7 +31,7 @@ router.post(
   ]),
   async (req, res) => {
     try {
-      const { name, price, description, modelInfo, category, code, colors, sizes, sizeStock, colorStock } = req.body;
+      const { name, price, description, modelInfo, category, code, colors, sizes, sizeStock, colorStock, collection } = req.body;
 
       // Check if product code already exists
       const existingProduct = await Product.findOne({ where: { code } });
@@ -82,7 +82,8 @@ router.post(
         colors: parseArray(colors),
         sizes: parseArray(sizes),
         sizeStock: parsedSizeStock,
-        colorStock: parsedColorStock
+        colorStock: parsedColorStock,
+        collection: collection || null
       });
 
       res.status(201).json(newProduct);
@@ -199,7 +200,7 @@ router.put(
         return res.status(404).json({ error: 'Product not found.' });
       }
 
-      const { name, price, description, modelInfo, category, code, colors, sizes, sizeStock, colorStock } = req.body;
+      const { name, price, description, modelInfo, category, code, colors, sizes, sizeStock, colorStock, collection } = req.body;
 
       // Check if SKU is changed and already exists on another product
       if (code && code !== product.code) {
@@ -290,7 +291,8 @@ router.put(
         colors: colors ? parseArray(colors) : product.colors,
         sizes: sizes ? parseArray(sizes) : product.sizes,
         sizeStock: parsedSizeStock,
-        colorStock: parsedColorStock
+        colorStock: parsedColorStock,
+        collection: collection !== undefined ? collection : product.collection
       });
 
       res.json(product);
