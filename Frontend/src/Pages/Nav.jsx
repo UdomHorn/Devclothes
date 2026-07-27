@@ -145,6 +145,31 @@ const Nav = () => {
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
+  const fetchCategoryBanners = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/banners/categories`);
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Map category banners to local map (lowercased keys)
+        const bannerMap = {};
+        data.forEach(item => {
+          if (item.category) {
+            bannerMap[item.category.toLowerCase()] = item.imageUrl;
+          }
+        });
+        setNavbarBanners(bannerMap);
+
+        const women = data.find(b => b.category === 'Women');
+        setWomenBanner(women ? women.imageUrl : "");
+        const men = data.find(b => b.category === 'Men');
+        setMenBanner(men ? men.imageUrl : "");
+      }
+    } catch (err) {
+      console.error('Failed to fetch category banners in nav:', err);
+    }
+  };
+
   // Fetch all products and category banners on mount
   useEffect(() => {
     const fetchAllProducts = async () => {
@@ -160,34 +185,16 @@ const Nav = () => {
       }
     };
 
-    const fetchCategoryBanners = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/api/banners/categories`);
-        if (response.ok) {
-          const data = await response.json();
-          
-          // Map category banners to local map (lowercased keys)
-          const bannerMap = {};
-          data.forEach(item => {
-            if (item.category) {
-              bannerMap[item.category.toLowerCase()] = item.imageUrl;
-            }
-          });
-          setNavbarBanners(bannerMap);
-
-          const women = data.find(b => b.category === 'Women');
-          setWomenBanner(women ? women.imageUrl : "");
-          const men = data.find(b => b.category === 'Men');
-          setMenBanner(men ? men.imageUrl : "");
-        }
-      } catch (err) {
-        console.error('Failed to fetch category banners in nav:', err);
-      }
-    };
-
     fetchAllProducts();
     fetchCategoryBanners();
   }, []);
+
+  // Automatically fetch banners if dropdown opens and they haven't loaded yet
+  useEffect(() => {
+    if (activeDropdown && Object.keys(navbarBanners).length === 0) {
+      fetchCategoryBanners();
+    }
+  }, [activeDropdown]);
 
   // Click outside to close user dropdown
   useEffect(() => {

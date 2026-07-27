@@ -15,7 +15,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'devclothes_ecommerce_products', // The folder inside Cloudinary
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'avif'],
     // Optional image optimizations on upload
     transformation: [{ width: 1000, height: 1500, crop: 'limit' }]
   },
@@ -26,7 +26,7 @@ const bannerStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'devclothes_ecommerce_banners', // Separate folder inside Cloudinary
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'avif'],
     // No transformation properties to retain original resolution
   },
 });
