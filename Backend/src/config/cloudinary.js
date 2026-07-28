@@ -21,13 +21,14 @@ const storage = new CloudinaryStorage({
   },
 });
 
-// Dedicated storage engine for Banners to preserve original high quality
+// Dedicated storage engine for Banners to preserve quality but limit excessive resolution/size
 const bannerStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'devclothes_ecommerce_banners', // Separate folder inside Cloudinary
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'avif'],
-    // No transformation properties to retain original resolution
+    // Limit to max 1920 width to prevent massive files
+    transformation: [{ width: 1920, height: 1080, crop: 'limit' }]
   },
 });
 

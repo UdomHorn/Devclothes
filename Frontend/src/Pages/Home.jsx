@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Collection from '../assets/Components/Collection'
 import HightLightCard from '../assets/Components/HightLightCard'
 import API_BASE from '../config'
+import { getOptimizedImageUrl } from '../utils/cloudinary'
 
 const Home = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -151,7 +152,7 @@ const Home = () => {
               {[...banners, banners[0]].map((banner, i) => (
                 <div key={banner.id ? `${banner.id}-${i}` : i} className="w-full h-full flex-shrink-0">
                   <img
-                    src={banner.imageUrl}
+                    src={getOptimizedImageUrl(banner.imageUrl, { width: 1600, height: 900, crop: 'fill' })}
                     alt={banner.title || 'banner'}
                     className="w-full h-full object-cover"
                   />

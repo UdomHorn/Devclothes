@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useFavorites } from '../../context/FavoritesContext'
+import { getOptimizedImageUrl } from '../../utils/cloudinary'
 
 const HightLightCard = ({ page, src, price, title, product }) => {
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -11,7 +12,7 @@ const HightLightCard = ({ page, src, price, title, product }) => {
         {/* Fixed 3:4 aspect ratio container — all cards are uniform */}
         <div className="relative w-full aspect-[3/4] overflow-hidden bg-gray-100 rounded-sm">
           <img
-            src={src}
+            src={getOptimizedImageUrl(src, { width: 500, height: 667, crop: 'fill' })}
             alt={title}
             className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
           />

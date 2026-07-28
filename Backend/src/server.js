@@ -18,6 +18,22 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const fs = require('fs');
+const path = require('path');
+const logToFile = (msg) => {
+  const time = new Date().toISOString();
+  try {
+    fs.appendFileSync(path.join(__dirname, '../server.log'), `[${time}] ${msg}\n`);
+  } catch (e) {
+    console.error('Failed to write to server.log:', e);
+  }
+};
+
+app.use((req, res, next) => {
+  logToFile(`${req.method} ${req.url} - Content-Length: ${req.headers['content-length'] || 0} - IP: ${req.ip}`);
+  next();
+});
+
 // Enable CORS with credentials support
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
@@ -171,6 +187,13 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/banners', bannerRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/notifications', notificationRoutes);
+
+// Global Error Handler to return JSON responses instead of default HTML pages
+app.use((err, req, res, next) => {
+  console.error('❌ Global Server Error:', err);
+  logToFile(`❌ ERROR: ${err.message}\nStack: ${err.stack}`);
+  res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
+});
 
 // Test database connection and start server
 async function startServer() {
