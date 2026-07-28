@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { getOptimizedImageUrl } from '../../utils/cloudinary'
 
 const CollectionProductCard = ({ page, src, price, title, product }) => {
   return (
@@ -8,7 +9,7 @@ const CollectionProductCard = ({ page, src, price, title, product }) => {
       <div className="relative w-full aspect-[3/4] overflow-hidden bg-gray-50 border border-gray-100/50">
         <Link to={page} className="block w-full h-full">
           <img
-            src={src}
+            src={getOptimizedImageUrl(src, { width: 500, height: 667, crop: 'fill' })}
             alt={title}
             className="w-full h-full object-cover object-top transition-transform duration-[1200ms] ease-out group-hover:scale-[1.01]"
           />

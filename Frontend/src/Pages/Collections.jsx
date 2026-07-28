@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import CollectionProductCard from '../assets/Components/CollectionProductCard';
 import API_BASE from '../config';
+import { getOptimizedImageUrl } from '../utils/cloudinary';
 
 const collectionConfig = {
   spring: {
@@ -99,7 +100,7 @@ const Collections = () => {
               <div className="w-full h-full bg-neutral-100 animate-pulse flex items-center justify-center text-xs font-semibold text-gray-400">Loading Banner...</div>
             ) : (
               <img
-                src={collectionBanner || config.fallbackBanner}
+                src={getOptimizedImageUrl(collectionBanner || config.fallbackBanner, { width: 800, height: 1067, crop: 'fill' })}
                 alt={config.title}
                 className="w-full h-full object-cover object-top"
               />

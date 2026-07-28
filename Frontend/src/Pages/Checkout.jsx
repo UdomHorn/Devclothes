@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
 import API_BASE from '../config';
 import logo from '../assets/logo/Devclothes.jpg';
+import { getOptimizedImageUrl } from '../utils/cloudinary';
 
 // Initialize Stripe (VITE_STRIPE_PUBLISHABLE_KEY from .env or fallback test key)
 const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51PxPlaceholderKeyXXXXXXXXXXXXXX';
@@ -528,7 +529,7 @@ const Checkout = () => {
                     <div key={idx} className="flex gap-4 items-center">
                       <div className="w-12 h-16 overflow-hidden rounded bg-gray-50 border flex-shrink-0 print:hidden">
                         <img
-                          src={item.product?.images?.[0] || 'https://via.placeholder.com/100x120'}
+                          src={getOptimizedImageUrl(item.product?.images?.[0] || 'https://via.placeholder.com/100x120', { width: 100, height: 133, crop: 'fill' })}
                           alt={item.product?.name || 'Product'}
                           className="w-full h-full object-cover"
                         />
@@ -628,7 +629,7 @@ const Checkout = () => {
             {cart.map((item, idx) => (
               <div key={idx} className="flex gap-4 border-b pb-6">
                 <div className="w-20 h-24 overflow-hidden rounded bg-gray-50 border flex-shrink-0">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  <img src={getOptimizedImageUrl(item.image, { width: 150, height: 200, crop: 'fill' })} alt={item.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-grow">
                   <h3 className="font-bold text-lg">{item.name}</h3>

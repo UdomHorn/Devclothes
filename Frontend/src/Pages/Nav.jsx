@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import API_BASE from '../config'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
+import { getOptimizedImageUrl } from '../utils/cloudinary'
 
 const Nav = () => {
   // const [showLogin, setShowLogin] = useState(false);
@@ -626,24 +627,25 @@ const Nav = () => {
                   {/* Right Side: Dynamic Lookbook Image — smaller, flush right */}
                   <div className="col-span-5 flex items-center justify-end">
                     <div className="aspect-[3/4] w-[200px] overflow-hidden bg-gray-50 rounded-none relative">
-                      <AnimatePresence mode="wait">
+                      <AnimatePresence>
                         <motion.img
                           key={hoveredCollection}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
-                          transition={{ duration: 0.3, ease: 'easeInOut' }}
-                          src={
+                          transition={{ duration: 0.18, ease: 'easeOut' }}
+                          src={getOptimizedImageUrl(
                             hoveredCollection === 'spring'
                               ? navbarBanners['collections_spring'] || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop'
                               : hoveredCollection === 'summer'
                               ? navbarBanners['collections_summer'] || 'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop'
                               : hoveredCollection === 'fall'
                               ? navbarBanners['collections_fall'] || 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=600&auto=format&fit=crop'
-                              : navbarBanners['collections_winter'] || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600&auto=format&fit=crop'
-                          }
+                              : navbarBanners['collections_winter'] || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600&auto=format&fit=crop',
+                            { width: 300, height: 400, crop: 'fill' }
+                          )}
                           alt={`${hoveredCollection} Collection Campaign`}
-                          className="h-full w-full object-cover object-top"
+                          className="absolute inset-0 h-full w-full object-cover object-top"
                         />
                       </AnimatePresence>
                     </div>
@@ -701,14 +703,14 @@ const Nav = () => {
                   {/* Right Side: Dynamic Image — smaller, flush right */}
                   <div className="col-span-5 flex items-center justify-end">
                     <div className="aspect-[3/4] w-[200px] overflow-hidden bg-gray-50 rounded-none relative">
-                      <AnimatePresence mode="wait">
+                      <AnimatePresence>
                         <motion.img
                           key={`${activeDropdown}-${hoveredSubcategory}`}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
-                          transition={{ duration: 0.3, ease: 'easeInOut' }}
-                          src={
+                          transition={{ duration: 0.18, ease: 'easeOut' }}
+                          src={getOptimizedImageUrl(
                             activeDropdown === 'women'
                               ? hoveredSubcategory === 'all'
                                 ? womenBanner || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600&auto=format&fit=crop'
@@ -727,10 +729,11 @@ const Nav = () => {
                               ? navbarBanners['men_hoodies'] || 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop'
                               : hoveredSubcategory === 'pants'
                               ? navbarBanners['men_pants'] || 'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?q=80&w=600&auto=format&fit=crop'
-                              : navbarBanners['men_jackets'] || 'https://images.unsplash.com/photo-1495105787522-5334e3ffa0ef?q=80&w=600&auto=format&fit=crop'
-                          }
+                              : navbarBanners['men_jackets'] || 'https://images.unsplash.com/photo-1495105787522-5334e3ffa0ef?q=80&w=600&auto=format&fit=crop',
+                            { width: 300, height: 400, crop: 'fill' }
+                          )}
                           alt={`${activeDropdown} Collection Campaign`}
-                          className="h-full w-full object-cover object-top"
+                          className="absolute inset-0 h-full w-full object-cover object-top"
                         />
                       </AnimatePresence>
                     </div>
@@ -1054,7 +1057,7 @@ const Nav = () => {
                             <div className="aspect-[3/4] w-full overflow-hidden bg-gray-50 rounded-sm mb-3 relative">
                               {product.images && product.images[0] && (
                                 <img
-                                  src={product.images[0]}
+                                  src={getOptimizedImageUrl(product.images[0], { width: 100, height: 133, crop: 'fill' })}
                                   alt={product.name}
                                   className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                                 />
@@ -1116,7 +1119,7 @@ const Nav = () => {
                               <div className="h-16 w-16 flex-shrink-0 overflow-hidden bg-gray-50 rounded-sm">
                                 {product.images && product.images[0] && (
                                   <img
-                                    src={product.images[0]}
+                                    src={getOptimizedImageUrl(product.images[0], { width: 100, height: 100, crop: 'fill' })}
                                     alt={product.name}
                                     className="h-full w-full object-cover object-center"
                                   />

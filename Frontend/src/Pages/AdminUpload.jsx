@@ -224,6 +224,7 @@ const AdminUpload = () => {
   const [dbCategoryBanners, setDbCategoryBanners] = useState([]);
   const [pendingFiles, setPendingFiles] = useState({});
   const [pendingPreviews, setPendingPreviews] = useState({});
+  const [savingKeys, setSavingKeys] = useState({});
 
   // No cropping session needed
 
@@ -846,7 +847,8 @@ const AdminUpload = () => {
       return;
     }
 
-    setLoading(true);
+    const key = `slide-${slot}`;
+    setSavingKeys(prev => ({ ...prev, [key]: true }));
     setMessage({ type: '', text: '' });
 
     try {
@@ -880,7 +882,11 @@ const AdminUpload = () => {
       console.error(error);
       setMessage({ type: 'error', text: error.message || 'Something went wrong.' });
     } finally {
-      setLoading(false);
+      setSavingKeys(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
     }
   };
 
@@ -907,7 +913,8 @@ const AdminUpload = () => {
       return;
     }
 
-    setLoading(true);
+    const key = `category-${category}`;
+    setSavingKeys(prev => ({ ...prev, [key]: true }));
     setMessage({ type: '', text: '' });
 
     try {
@@ -919,11 +926,11 @@ const AdminUpload = () => {
         method: 'POST',
         body: formData,
       });
-      if (!response.ok) throw new Error(`Failed to update ${category} Collection banner.`);
+      if (!response.ok) throw new Error(`Failed to update ${category} banner.`);
 
       setMessage({
         type: 'success',
-        text: `${category} Collection banner updated successfully!`
+        text: `${category} banner updated successfully!`
       });
 
       // Clear pending
@@ -935,14 +942,19 @@ const AdminUpload = () => {
       console.error(error);
       setMessage({ type: 'error', text: error.message || 'Something went wrong.' });
     } finally {
-      setLoading(false);
+      setSavingKeys(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
     }
   };
 
   const deleteCategoryBanner = async (category) => {
     if (!window.confirm(`Are you sure you want to delete the banner for the ${category} Collection? If deleted, it will show no image.`)) return;
 
-    setLoading(true);
+    const key = `category-${category}`;
+    setSavingKeys(prev => ({ ...prev, [key]: true }));
     setMessage({ type: '', text: '' });
 
     try {
@@ -961,12 +973,19 @@ const AdminUpload = () => {
       console.error(error);
       setMessage({ type: 'error', text: error.message || `Failed to delete ${category} banner.` });
     } finally {
-      setLoading(false);
+      setSavingKeys(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
     }
   };
 
-  const deleteBanner = async (id) => {
+  const deleteBanner = async (id, slot) => {
     if (!window.confirm('Are you sure you want to delete this banner?')) return;
+
+    const key = `slide-${slot}`;
+    setSavingKeys(prev => ({ ...prev, [key]: true }));
 
     try {
       const response = await fetch(`${API_BASE}/api/banners/${id}`, {
@@ -983,6 +1002,12 @@ const AdminUpload = () => {
     } catch (error) {
       console.error(error);
       setMessage({ type: 'error', text: error.message || 'Failed to delete banner.' });
+    } finally {
+      setSavingKeys(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
     }
   };
 
@@ -1960,19 +1985,20 @@ const AdminUpload = () => {
                           <button
                             type="button"
                             onClick={() => saveSlide(1)}
-                            disabled={loading}
+                            disabled={savingKeys['slide-1']}
                             className="flex-1 py-2 bg-black hover:bg-neutral-800 text-white font-semibold text-xs rounded transition uppercase tracking-wider cursor-pointer flex items-center justify-center gap-1 shadow-sm"
                           >
-                            {loading ? 'Saving...' : 'Save Banner'}
+                            {savingKeys['slide-1'] ? 'Saving...' : 'Save Banner'}
                           </button>
                         </>
                       ) : dbBanners.find(b => b.order === 1) ? (
                         <button
                           type="button"
-                          onClick={() => deleteBanner(dbBanners.find(b => b.order === 1).id)}
-                          className="w-full py-2 border border-gray-250 hover:border-red-500 hover:text-red-500 text-black font-bold text-xs rounded transition uppercase tracking-wider cursor-pointer bg-white"
+                          onClick={() => deleteBanner(dbBanners.find(b => b.order === 1).id, 1)}
+                          disabled={savingKeys['slide-1']}
+                          className="w-full py-2 border border-gray-255 hover:border-red-500 hover:text-red-500 text-black font-bold text-xs rounded transition uppercase tracking-wider cursor-pointer bg-white"
                         >
-                          Delete Banner
+                          {savingKeys['slide-1'] ? 'Deleting...' : 'Delete Banner'}
                         </button>
                       ) : null}
                     </div>
@@ -2034,19 +2060,20 @@ const AdminUpload = () => {
                           <button
                             type="button"
                             onClick={() => saveSlide(2)}
-                            disabled={loading}
+                            disabled={savingKeys['slide-2']}
                             className="flex-1 py-2 bg-black hover:bg-neutral-800 text-white font-semibold text-xs rounded transition uppercase tracking-wider cursor-pointer flex items-center justify-center gap-1 shadow-sm"
                           >
-                            {loading ? 'Saving...' : 'Save Banner'}
+                            {savingKeys['slide-2'] ? 'Saving...' : 'Save Banner'}
                           </button>
                         </>
                       ) : dbBanners.find(b => b.order === 2) ? (
                         <button
                           type="button"
-                          onClick={() => deleteBanner(dbBanners.find(b => b.order === 2).id)}
+                          onClick={() => deleteBanner(dbBanners.find(b => b.order === 2).id, 2)}
+                          disabled={savingKeys['slide-2']}
                           className="w-full py-2 border border-gray-250 hover:border-red-500 hover:text-red-500 text-black font-bold text-xs rounded transition uppercase tracking-wider cursor-pointer bg-white"
                         >
-                          Delete Banner
+                          {savingKeys['slide-2'] ? 'Deleting...' : 'Delete Banner'}
                         </button>
                       ) : null}
                     </div>
@@ -2064,13 +2091,13 @@ const AdminUpload = () => {
                 {/* Women Collection Slot */}
                 <div className="border border-gray-200 rounded-xl bg-white p-4 flex flex-col sm:flex-row gap-4 items-start">
                   {/* Compact Image Selector */}
-                  <label className="cursor-pointer flex-shrink-0 w-full sm:w-48 aspect-[4/5] bg-gray-50 border border-dashed border-gray-200 hover:border-black rounded-lg overflow-hidden transition-colors flex items-center justify-center relative">
+                  <label className="cursor-pointer flex-shrink-0 w-full sm:w-48 aspect-[4/5] bg-gray-50 border border-dashed border-gray-200 hover:border-black rounded-lg overflow-hidden transition-colors">
                     <input
                       type="file"
                       accept="image/*"
                       onChange={(e) => handleFileSelect(e, 'Women')}
                       className="hidden"
-                      disabled={loading}
+                      disabled={savingKeys['category-Women']}
                     />
                     {pendingPreviews.Women ? (
                       <img src={pendingPreviews.Women} alt="Women Collection Preview" className="w-full h-full object-cover" />
@@ -2107,6 +2134,7 @@ const AdminUpload = () => {
                           <button
                             type="button"
                             onClick={() => cancelPending('Women')}
+                            disabled={savingKeys['category-Women']}
                             className="px-4 py-2 border border-gray-250 hover:border-black text-black font-bold text-xs rounded transition uppercase tracking-wider cursor-pointer bg-white"
                           >
                             Cancel
@@ -2114,20 +2142,20 @@ const AdminUpload = () => {
                           <button
                             type="button"
                             onClick={() => saveCollection('Women')}
-                            disabled={loading}
+                            disabled={savingKeys['category-Women']}
                             className="px-4 py-2 bg-black hover:bg-neutral-800 text-white font-bold text-xs rounded transition uppercase tracking-wider cursor-pointer flex items-center justify-center gap-1 shadow-sm"
                           >
-                            {loading ? 'Saving...' : 'Save Banner'}
+                            {savingKeys['category-Women'] ? 'Saving...' : 'Save Banner'}
                           </button>
                         </>
                       ) : dbCategoryBanners.find(b => b.category === 'Women') ? (
                         <button
                           type="button"
                           onClick={() => deleteCategoryBanner('Women')}
-                          disabled={loading}
+                          disabled={savingKeys['category-Women']}
                           className="px-4 py-2 border border-gray-250 hover:border-red-500 hover:text-red-500 text-black font-bold text-xs rounded transition uppercase tracking-wider cursor-pointer bg-white w-full sm:w-auto"
                         >
-                          Delete Banner
+                          {savingKeys['category-Women'] ? 'Deleting...' : 'Delete Banner'}
                         </button>
                       ) : null}
                     </div>
@@ -2143,7 +2171,7 @@ const AdminUpload = () => {
                       accept="image/*"
                       onChange={(e) => handleFileSelect(e, 'Men')}
                       className="hidden"
-                      disabled={loading}
+                      disabled={savingKeys['category-Men']}
                     />
                     {pendingPreviews.Men ? (
                       <img src={pendingPreviews.Men} alt="Men Collection Preview" className="w-full h-full object-cover" />
@@ -2180,6 +2208,7 @@ const AdminUpload = () => {
                           <button
                             type="button"
                             onClick={() => cancelPending('Men')}
+                            disabled={savingKeys['category-Men']}
                             className="px-4 py-2 border border-gray-250 hover:border-black text-black font-bold text-xs rounded transition uppercase tracking-wider cursor-pointer bg-white"
                           >
                             Cancel
@@ -2187,20 +2216,20 @@ const AdminUpload = () => {
                           <button
                             type="button"
                             onClick={() => saveCollection('Men')}
-                            disabled={loading}
+                            disabled={savingKeys['category-Men']}
                             className="px-4 py-2 bg-black hover:bg-neutral-800 text-white font-bold text-xs rounded transition uppercase tracking-wider cursor-pointer flex items-center justify-center gap-1 shadow-sm"
                           >
-                            {loading ? 'Saving...' : 'Save Banner'}
+                            {savingKeys['category-Men'] ? 'Saving...' : 'Save Banner'}
                           </button>
                         </>
                       ) : dbCategoryBanners.find(b => b.category === 'Men') ? (
                         <button
                           type="button"
                           onClick={() => deleteCategoryBanner('Men')}
-                          disabled={loading}
+                          disabled={savingKeys['category-Men']}
                           className="px-4 py-2 border border-gray-250 hover:border-red-500 hover:text-red-500 text-black font-bold text-xs rounded transition uppercase tracking-wider cursor-pointer bg-white w-full sm:w-auto"
                         >
-                          Delete Banner
+                          {savingKeys['category-Men'] ? 'Deleting...' : 'Delete Banner'}
                         </button>
                       ) : null}
                     </div>
@@ -2266,7 +2295,7 @@ const AdminUpload = () => {
                                 accept="image/*"
                                 onChange={(e) => handleFileSelect(e, item.key)}
                                 className="hidden"
-                                disabled={loading}
+                                disabled={savingKeys['category-' + item.key]}
                               />
                               {displayUrl ? (
                                 <img src={displayUrl} alt={item.label} className="w-full h-full object-cover" />
@@ -2286,6 +2315,7 @@ const AdminUpload = () => {
                                 <button
                                   type="button"
                                   onClick={() => cancelPending(item.key)}
+                                  disabled={savingKeys['category-' + item.key]}
                                   className="flex-1 py-1 px-2 border border-gray-200 hover:border-black text-black font-bold text-[10px] rounded transition uppercase tracking-wider bg-white cursor-pointer"
                                 >
                                   Cancel
@@ -2293,20 +2323,20 @@ const AdminUpload = () => {
                                 <button
                                   type="button"
                                   onClick={() => saveCollection(item.key)}
-                                  disabled={loading}
+                                  disabled={savingKeys['category-' + item.key]}
                                   className="flex-1 py-1 px-2 bg-black hover:bg-neutral-800 text-white font-bold text-[10px] rounded transition uppercase tracking-wider cursor-pointer shadow-sm"
                                 >
-                                  Save
+                                  {savingKeys['category-' + item.key] ? 'Saving...' : 'Save'}
                                 </button>
                               </>
                             ) : currentUrl ? (
                               <button
                                 type="button"
                                 onClick={() => deleteCategoryBanner(item.key)}
-                                disabled={loading}
+                                disabled={savingKeys['category-' + item.key]}
                                 className="w-full py-1 px-2 border border-gray-200 hover:border-red-500 hover:text-red-500 text-black font-bold text-[10px] rounded transition uppercase tracking-wider bg-white cursor-pointer"
                               >
-                                Delete
+                                {savingKeys['category-' + item.key] ? 'Deleting...' : 'Delete'}
                               </button>
                             ) : null}
                           </div>
