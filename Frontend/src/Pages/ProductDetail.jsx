@@ -247,7 +247,7 @@ const ProductDetail = () => {
           >
             {/* Thumbnail Image */}
             <div className="w-16 h-20 bg-gray-100 flex-shrink-0 border border-gray-200 rounded-none overflow-hidden">
-              <img src={getOptimizedImageUrl(images && images[0], { width: 100, height: 133, crop: 'fill' })} alt={name} className="w-full h-full object-cover" />
+              <img src={getOptimizedImageUrl(images && images[0], { width: 100, height: 133, crop: 'fill' })} alt={name} className="w-full h-full object-cover" loading="lazy" />
             </div>
 
             {/* Info and Action */}
@@ -299,6 +299,8 @@ const ProductDetail = () => {
                     className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
                       i === currentIndex ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none'
                     }`}
+                    loading={i === 0 ? "eager" : "lazy"}
+                    {...(i === 0 ? { fetchPriority: "high" } : {})}
                   />
                 ))}
               </div>
@@ -335,7 +337,7 @@ const ProductDetail = () => {
                     idx === currentIndex ? 'border-black' : 'border-transparent opacity-60 hover:opacity-100'
                   }`}
                 >
-                  <img src={getOptimizedImageUrl(img, { width: 100, height: 133, crop: 'fill' })} alt="thumbnail" className="w-full h-full object-cover" />
+                  <img src={getOptimizedImageUrl(img, { width: 100, height: 133, crop: 'fill' })} alt="thumbnail" className="w-full h-full object-cover" loading="lazy" />
                 </button>
               ))}
             </div>

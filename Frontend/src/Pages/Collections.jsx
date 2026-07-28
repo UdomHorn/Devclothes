@@ -103,6 +103,8 @@ const Collections = () => {
                 src={getOptimizedImageUrl(collectionBanner || config.fallbackBanner, { width: 800, height: 1067, crop: 'fill' })}
                 alt={config.title}
                 className="w-full h-full object-cover object-top"
+                loading="eager"
+                fetchPriority="high"
               />
             )}
           </div>
