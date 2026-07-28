@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import API_BASE from '../config';
 import { useAuth } from '../context/AuthContext';
+import { getOptimizedImageUrl } from '../utils/cloudinary';
 
 const MyOrders = () => {
   const { user, openAuthModal, loading: authLoading } = useAuth();
@@ -203,9 +204,10 @@ const MyOrders = () => {
                             <div key={idx} className="flex gap-4 border-b pb-4 last:border-0 last:pb-0">
                               <div className="w-16 h-20 overflow-hidden rounded bg-gray-50 border flex-shrink-0">
                                 <img 
-                                  src={item.product?.images?.[0] || 'https://via.placeholder.com/100x120'} 
+                                  src={getOptimizedImageUrl(item.product?.images?.[0] || 'https://via.placeholder.com/100x120', { width: 100, height: 120, crop: 'fill' })} 
                                   alt={item.product?.name || 'Product'} 
                                   className="w-full h-full object-cover" 
+                                  loading="lazy"
                                 />
                               </div>
                               <div className="flex-grow">

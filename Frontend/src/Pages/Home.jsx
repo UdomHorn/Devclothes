@@ -136,7 +136,7 @@ const Home = () => {
   return (
     <div className='pt-[48px] font-roboto'>
       {/* Banner Carousel */}
-      <div className="w-full overflow-hidden bg-gray-100 h-[calc(100vh-48px)] relative">
+      <div className="w-full overflow-hidden bg-gray-100 h-[45vh] sm:h-[calc(100vh-48px)] relative">
         {banners === null ? (
           // Shimmer/Skeleton loader while fetching
           <div className="w-full h-full bg-neutral-100 animate-pulse flex items-center justify-center">
@@ -153,8 +153,16 @@ const Home = () => {
                 <div key={banner.id ? `${banner.id}-${i}` : i} className="w-full h-full flex-shrink-0">
                   <img
                     src={getOptimizedImageUrl(banner.imageUrl, { width: 1600, height: 900, crop: 'fill' })}
+                    srcSet={`
+                      ${getOptimizedImageUrl(banner.imageUrl, { width: 600, height: 600, crop: 'fill' })} 600w,
+                      ${getOptimizedImageUrl(banner.imageUrl, { width: 1200, height: 675, crop: 'fill' })} 1200w,
+                      ${getOptimizedImageUrl(banner.imageUrl, { width: 1600, height: 900, crop: 'fill' })} 1600w
+                    `}
+                    sizes="(max-width: 640px) 600px, (max-width: 1024px) 1200px, 1600px"
                     alt={banner.title || 'banner'}
                     className="w-full h-full object-cover"
+                    loading={i === 0 ? "eager" : "lazy"}
+                    {...(i === 0 ? { fetchPriority: "high" } : {})}
                   />
                 </div>
               ))}

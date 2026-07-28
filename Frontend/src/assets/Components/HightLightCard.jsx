@@ -13,7 +13,14 @@ const HightLightCard = ({ page, src, price, title, product }) => {
         <div className="relative w-full aspect-[3/4] overflow-hidden bg-gray-100 rounded-sm">
           <img
             src={getOptimizedImageUrl(src, { width: 500, height: 667, crop: 'fill' })}
+            srcSet={`
+              ${getOptimizedImageUrl(src, { width: 300, height: 400, crop: 'fill' })} 300w,
+              ${getOptimizedImageUrl(src, { width: 500, height: 667, crop: 'fill' })} 500w,
+              ${getOptimizedImageUrl(src, { width: 800, height: 1067, crop: 'fill' })} 800w
+            `}
+            sizes="(max-width: 640px) 300px, (max-width: 1024px) 500px, 800px"
             alt={title}
+            loading="lazy"
             className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
           />
         </div>
