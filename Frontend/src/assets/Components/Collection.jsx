@@ -1,12 +1,23 @@
 import React from 'react'
 import { getOptimizedImageUrl } from '../../utils/cloudinary'
 
-const Collection = ({ src, title }) => {
+const Collection = ({ src, title, loading = "lazy", fetchPriority }) => {
+  const [isLoaded, setIsLoaded] = React.useState(false);
+
   return (
     <div className="w-full">
       <div className="w-full aspect-[4/5] bg-gray-100 flex items-center justify-center overflow-hidden">
         {src ? (
-          <img src={getOptimizedImageUrl(src, { width: 800, height: 1000, crop: 'fill' })} alt={title} className="w-full h-full object-cover transition-opacity duration-300" />
+          <img
+            src={getOptimizedImageUrl(src, { width: 800, height: 1000, crop: 'fill' })}
+            alt={title}
+            loading={loading}
+            fetchPriority={fetchPriority}
+            onLoad={() => setIsLoaded(true)}
+            className={`w-full h-full object-cover transition-all duration-[500ms] ${
+              isLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
         ) : src === "" ? (
           <span className="text-gray-300 font-semibold tracking-wider text-xs uppercase">No Image Set</span>
         ) : (

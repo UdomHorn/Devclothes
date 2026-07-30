@@ -146,6 +146,21 @@ const Nav = () => {
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
+  const getActiveImageUrl = () => {
+    if (activeDropdown === 'collections') {
+      return navbarBanners[`collections_${hoveredCollection}`] || '';
+    }
+    if (activeDropdown === 'women') {
+      if (hoveredSubcategory === 'all') return womenBanner || '';
+      return navbarBanners[`women_${hoveredSubcategory}`] || '';
+    }
+    if (activeDropdown === 'men') {
+      if (hoveredSubcategory === 'all') return menBanner || '';
+      return navbarBanners[`men_${hoveredSubcategory}`] || '';
+    }
+    return '';
+  };
+
   const fetchCategoryBanners = async () => {
     try {
       const response = await fetch(`${API_BASE}/api/banners/categories`);
@@ -626,27 +641,27 @@ const Nav = () => {
 
                   {/* Right Side: Dynamic Lookbook Image — smaller, flush right */}
                   <div className="col-span-5 flex items-center justify-end">
-                    <div className="aspect-[3/4] w-[200px] overflow-hidden bg-gray-50 rounded-none relative">
-                      <AnimatePresence>
-                        <motion.img
-                          key={hoveredCollection}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.18, ease: 'easeOut' }}
-                          src={getOptimizedImageUrl(
-                            hoveredCollection === 'spring'
-                              ? navbarBanners['collections_spring'] || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop'
-                              : hoveredCollection === 'summer'
-                              ? navbarBanners['collections_summer'] || 'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop'
-                              : hoveredCollection === 'fall'
-                              ? navbarBanners['collections_fall'] || 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=600&auto=format&fit=crop'
-                              : navbarBanners['collections_winter'] || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600&auto=format&fit=crop',
-                            { width: 300, height: 400, crop: 'fill' }
-                          )}
-                          alt={`${hoveredCollection} Collection Campaign`}
-                          className="absolute inset-0 h-full w-full object-cover object-top"
-                        />
+                    <div className="aspect-[3/4] w-[200px] overflow-hidden bg-neutral-100 rounded-none relative">
+                      <AnimatePresence mode="wait">
+                        {navbarBanners[`collections_${hoveredCollection}`] ? (
+                          <motion.img
+                            key={hoveredCollection}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.18, ease: 'easeOut' }}
+                            src={getOptimizedImageUrl(
+                              navbarBanners[`collections_${hoveredCollection}`],
+                              { width: 300, height: 400, crop: 'fill' }
+                            )}
+                            alt={`${hoveredCollection} Collection Campaign`}
+                            className="absolute inset-0 h-full w-full object-cover object-top"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 w-full h-full bg-neutral-100 flex items-center justify-center select-none animate-pulse">
+                            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Loading...</span>
+                          </div>
+                        )}
                       </AnimatePresence>
                     </div>
                   </div>
@@ -658,7 +673,7 @@ const Nav = () => {
                     <ul className="space-y-4">
                       <li>
                         <Link
-                          to={`/${activeDropdown === 'women' ? 'Women' : 'Men'}`}
+                          to={`/${activeDropdown === 'women' ? 'Women' : 'Men'}?subcategory=Tops`}
                           onClick={() => setActiveDropdown(null)}
                           onMouseEnter={() => setHoveredSubcategory('tops')}
                           className="text-[15px] text-neutral-500 hover:text-neutral-900 font-light tracking-wide transition-colors block font-inter"
@@ -668,7 +683,7 @@ const Nav = () => {
                       </li>
                       <li>
                         <Link
-                          to={`/${activeDropdown === 'women' ? 'Women' : 'Men'}`}
+                          to={`/${activeDropdown === 'women' ? 'Women' : 'Men'}?subcategory=Hoodies`}
                           onClick={() => setActiveDropdown(null)}
                           onMouseEnter={() => setHoveredSubcategory('hoodies')}
                           className="text-[15px] text-neutral-500 hover:text-neutral-900 font-light tracking-wide transition-colors block font-inter"
@@ -678,7 +693,7 @@ const Nav = () => {
                       </li>
                       <li>
                         <Link
-                          to={`/${activeDropdown === 'women' ? 'Women' : 'Men'}`}
+                          to={`/${activeDropdown === 'women' ? 'Women' : 'Men'}?subcategory=Pants`}
                           onClick={() => setActiveDropdown(null)}
                           onMouseEnter={() => setHoveredSubcategory('pants')}
                           className="text-[15px] text-neutral-500 hover:text-neutral-900 font-light tracking-wide transition-colors block font-inter"
@@ -688,7 +703,7 @@ const Nav = () => {
                       </li>
                       <li>
                         <Link
-                          to={`/${activeDropdown === 'women' ? 'Women' : 'Men'}`}
+                          to={`/${activeDropdown === 'women' ? 'Women' : 'Men'}?subcategory=Jackets`}
                           onClick={() => setActiveDropdown(null)}
                           onMouseEnter={() => setHoveredSubcategory('jackets')}
                           className="text-[15px] text-neutral-500 hover:text-neutral-900 font-light tracking-wide transition-colors block font-inter"
@@ -702,39 +717,27 @@ const Nav = () => {
 
                   {/* Right Side: Dynamic Image — smaller, flush right */}
                   <div className="col-span-5 flex items-center justify-end">
-                    <div className="aspect-[3/4] w-[200px] overflow-hidden bg-gray-50 rounded-none relative">
-                      <AnimatePresence>
-                        <motion.img
-                          key={`${activeDropdown}-${hoveredSubcategory}`}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.18, ease: 'easeOut' }}
-                          src={getOptimizedImageUrl(
-                            activeDropdown === 'women'
-                              ? hoveredSubcategory === 'all'
-                                ? womenBanner || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600&auto=format&fit=crop'
-                                : hoveredSubcategory === 'tops'
-                                ? navbarBanners['women_tops'] || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop'
-                                : hoveredSubcategory === 'hoodies'
-                                ? navbarBanners['women_hoodies'] || 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop'
-                                : hoveredSubcategory === 'pants'
-                                ? navbarBanners['women_pants'] || 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=600&auto=format&fit=crop'
-                                : navbarBanners['women_jackets'] || 'https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=600&auto=format&fit=crop'
-                              : hoveredSubcategory === 'all'
-                              ? menBanner || 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=600&auto=format&fit=crop'
-                              : hoveredSubcategory === 'tops'
-                              ? navbarBanners['men_tops'] || 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=600&auto=format&fit=crop'
-                              : hoveredSubcategory === 'hoodies'
-                              ? navbarBanners['men_hoodies'] || 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop'
-                              : hoveredSubcategory === 'pants'
-                              ? navbarBanners['men_pants'] || 'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?q=80&w=600&auto=format&fit=crop'
-                              : navbarBanners['men_jackets'] || 'https://images.unsplash.com/photo-1495105787522-5334e3ffa0ef?q=80&w=600&auto=format&fit=crop',
-                            { width: 300, height: 400, crop: 'fill' }
-                          )}
-                          alt={`${activeDropdown} Collection Campaign`}
-                          className="absolute inset-0 h-full w-full object-cover object-top"
-                        />
+                    <div className="aspect-[3/4] w-[200px] overflow-hidden bg-neutral-100 rounded-none relative">
+                      <AnimatePresence mode="wait">
+                        {getActiveImageUrl() ? (
+                          <motion.img
+                            key={`${activeDropdown}-${hoveredSubcategory}`}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.18, ease: 'easeOut' }}
+                            src={getOptimizedImageUrl(
+                              getActiveImageUrl(),
+                              { width: 300, height: 400, crop: 'fill' }
+                            )}
+                            alt={`${activeDropdown} Collection Campaign`}
+                            className="absolute inset-0 h-full w-full object-cover object-top"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 w-full h-full bg-neutral-100 flex items-center justify-center select-none animate-pulse">
+                            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Loading...</span>
+                          </div>
+                        )}
                       </AnimatePresence>
                     </div>
                   </div>
@@ -850,14 +853,19 @@ const Nav = () => {
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden pl-4 space-y-1"
                       >
-                        {['Tops & T-Shirts', 'Hoodies & Sweatshirts', 'Pants & Jeans', 'Jackets & Outerwear'].map((item) => (
-                          <li key={item}>
+                        {[
+                          { label: 'Tops & T-Shirts', val: 'Tops' },
+                          { label: 'Hoodies & Sweatshirts', val: 'Hoodies' },
+                          { label: 'Pants & Jeans', val: 'Pants' },
+                          { label: 'Jackets & Outerwear', val: 'Jackets' }
+                        ].map((item) => (
+                          <li key={item.label}>
                             <Link
-                              to="/Women"
+                              to={`/Women?subcategory=${item.val}`}
                               onClick={closeMobileMenu}
                               className="block py-2 text-sm text-gray-500 hover:text-black transition-colors font-medium"
                             >
-                              {item}
+                              {item.label}
                             </Link>
                           </li>
                         ))}
@@ -892,14 +900,19 @@ const Nav = () => {
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden pl-4 space-y-1"
                       >
-                        {['Tops & T-Shirts', 'Hoodies & Sweatshirts', 'Pants & Jeans', 'Jackets & Outerwear'].map((item) => (
-                          <li key={item}>
+                        {[
+                          { label: 'Tops & T-Shirts', val: 'Tops' },
+                          { label: 'Hoodies & Sweatshirts', val: 'Hoodies' },
+                          { label: 'Pants & Jeans', val: 'Pants' },
+                          { label: 'Jackets & Outerwear', val: 'Jackets' }
+                        ].map((item) => (
+                          <li key={item.label}>
                             <Link
-                              to="/Men"
+                              to={`/Men?subcategory=${item.val}`}
                               onClick={closeMobileMenu}
                               className="block py-2 text-sm text-gray-500 hover:text-black transition-colors font-medium"
                             >
-                              {item}
+                              {item.label}
                             </Link>
                           </li>
                         ))}

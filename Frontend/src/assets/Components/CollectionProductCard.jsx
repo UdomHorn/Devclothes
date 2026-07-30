@@ -2,7 +2,9 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { getOptimizedImageUrl } from '../../utils/cloudinary'
 
-const CollectionProductCard = ({ page, src, price, title, product }) => {
+const CollectionProductCard = ({ page, src, price, title, product, loading = "lazy", fetchPriority }) => {
+  const [isLoaded, setIsLoaded] = React.useState(false);
+
   return (
     <div className="group relative flex flex-col bg-white">
       {/* Image Container */}
@@ -17,8 +19,12 @@ const CollectionProductCard = ({ page, src, price, title, product }) => {
             `}
             sizes="(max-width: 640px) 300px, (max-width: 1024px) 500px, 800px"
             alt={title}
-            loading="lazy"
-            className="w-full h-full object-cover object-top transition-transform duration-[1200ms] ease-out group-hover:scale-[1.01]"
+            loading={loading}
+            fetchPriority={fetchPriority}
+            onLoad={() => setIsLoaded(true)}
+            className={`w-full h-full object-cover object-top transition-all duration-[600ms] ease-out group-hover:scale-[1.01] ${
+              isLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
           />
         </Link>
       </div>

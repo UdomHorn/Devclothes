@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { preload } from 'react-dom'
 import Collection from '../assets/Components/Collection'
 import HightLightCard from '../assets/Components/HightLightCard'
 import API_BASE from '../config'
@@ -54,8 +55,14 @@ const Home = () => {
           const data = await response.json();
           const women = data.find(b => b.category === 'Women');
           setWomenBanner(women ? women.imageUrl : "");
+          if (women && women.imageUrl) {
+            preload(getOptimizedImageUrl(women.imageUrl, { width: 800, height: 1000, crop: 'fill' }), { as: 'image' });
+          }
           const men = data.find(b => b.category === 'Men');
           setMenBanner(men ? men.imageUrl : "");
+          if (men && men.imageUrl) {
+            preload(getOptimizedImageUrl(men.imageUrl, { width: 800, height: 1000, crop: 'fill' }), { as: 'image' });
+          }
         } else {
           setWomenBanner("");
           setMenBanner("");
@@ -78,9 +85,13 @@ const Home = () => {
           const data = await response.json();
           if (data && data.length > 0) {
             const filtered = data
-              .filter(b => b.order === 1 || b.order === 2)
-              .sort((a, b) => a.order - b.order);
+               .filter(b => b.order === 1 || b.order === 2)
+               .sort((a, b) => a.order - b.order);
             setBanners(filtered);
+            // Preload the first hero banner image immediately
+            if (filtered[0] && filtered[0].imageUrl) {
+              preload(getOptimizedImageUrl(filtered[0].imageUrl, { width: 1600, height: 900, crop: 'fill' }), { as: 'image', fetchPriority: 'high' });
+            }
           } else {
             setBanners([]);
           }
@@ -162,7 +173,7 @@ const Home = () => {
                     alt={banner.title || 'banner'}
                     className="w-full h-full object-cover"
                     loading={i === 0 ? "eager" : "lazy"}
-                    {...(i === 0 ? { fetchPriority: "high" } : {})}
+                    fetchPriority={i === 0 ? "high" : undefined}
                   />
                 </div>
               ))}
@@ -196,7 +207,7 @@ const Home = () => {
             <div className="w-full aspect-[4/5] bg-neutral-100 animate-pulse rounded-none flex items-center justify-center text-xs font-semibold text-gray-400">Loading...</div>
           ) : (
             <Link to="/Women" className="hover:opacity-95 transition block">
-              <Collection src={womenBanner} title="Women Collection" />
+              <Collection src={womenBanner} title="Women Collection" loading="eager" fetchPriority="high" />
             </Link>
           )}
         </div>
@@ -205,7 +216,7 @@ const Home = () => {
             <div className="w-full aspect-[4/5] bg-neutral-100 animate-pulse rounded-none flex items-center justify-center text-xs font-semibold text-gray-400">Loading...</div>
           ) : (
             <Link to="/Men" className="hover:opacity-95 transition block">
-              <Collection src={menBanner} title="Men Collection" />
+              <Collection src={menBanner} title="Men Collection" loading="eager" fetchPriority="high" />
             </Link>
           )}
         </div>
@@ -220,7 +231,7 @@ const Home = () => {
           <p className="text-gray-500 text-center py-10">No products found. Add products in the admin panel.</p>
         ) : (
           <div className='grid grid-cols-2 md:grid-cols-4 gap-6'>
-            {products.map((prod) => (
+            {products.map((prod, idx) => (
               <HightLightCard
                 key={prod.id}
                 product={prod}
@@ -228,6 +239,8 @@ const Home = () => {
                 src={prod.images && prod.images[0]}
                 price={`$${prod.price.toFixed(2)}`}
                 title={prod.name}
+                loading={idx < 4 ? "eager" : "lazy"}
+                fetchPriority={idx < 4 ? "high" : "low"}
               />
             ))}
           </div>

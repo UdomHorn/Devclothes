@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import { useFavorites } from '../../context/FavoritesContext'
 import { getOptimizedImageUrl } from '../../utils/cloudinary'
 
-const HightLightCard = ({ page, src, price, title, product }) => {
+const HightLightCard = ({ page, src, price, title, product, loading = "lazy", fetchPriority }) => {
   const { toggleFavorite, isFavorite } = useFavorites();
+  const [isLoaded, setIsLoaded] = React.useState(false);
 
   return (
     <div className="group">
@@ -20,8 +21,12 @@ const HightLightCard = ({ page, src, price, title, product }) => {
             `}
             sizes="(max-width: 640px) 300px, (max-width: 1024px) 500px, 800px"
             alt={title}
-            loading="lazy"
-            className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+            loading={loading}
+            fetchPriority={fetchPriority}
+            onLoad={() => setIsLoaded(true)}
+            className={`w-full h-full object-cover object-top transition-all duration-500 group-hover:scale-105 ${
+              isLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
           />
         </div>
       </Link>

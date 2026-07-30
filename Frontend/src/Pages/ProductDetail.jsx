@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { preload } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import AddtoBag from '../assets/Components/AddtoBag';
 import Size from '../assets/Components/Size';
@@ -41,6 +42,11 @@ const ProductDetail = () => {
         }
         
         setProduct(data);
+
+        // Preload the main product image for React 19 performance
+        if (data.images && data.images[0]) {
+          preload(getOptimizedImageUrl(data.images[0], { width: 800, height: 800, crop: 'fill' }), { as: 'image', fetchPriority: 'high' });
+        }
         
         // Set default selections - pick first item that is in-stock
         const inStockColors = data.colors ? data.colors.filter(c => {
@@ -247,7 +253,7 @@ const ProductDetail = () => {
           >
             {/* Thumbnail Image */}
             <div className="w-16 h-20 bg-gray-100 flex-shrink-0 border border-gray-200 rounded-none overflow-hidden">
-              <img src={getOptimizedImageUrl(images && images[0], { width: 100, height: 133, crop: 'fill' })} alt={name} className="w-full h-full object-cover" loading="lazy" />
+              <ToastThumbnail src={getOptimizedImageUrl(images && images[0], { width: 100, height: 133, crop: 'fill' })} alt={name} />
             </div>
 
             {/* Info and Action */}
@@ -300,7 +306,7 @@ const ProductDetail = () => {
                       i === currentIndex ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none'
                     }`}
                     loading={i === 0 ? "eager" : "lazy"}
-                    {...(i === 0 ? { fetchPriority: "high" } : {})}
+                    fetchPriority={i === 0 ? "high" : undefined}
                   />
                 ))}
               </div>
@@ -337,7 +343,7 @@ const ProductDetail = () => {
                     idx === currentIndex ? 'border-black' : 'border-transparent opacity-60 hover:opacity-100'
                   }`}
                 >
-                  <img src={getOptimizedImageUrl(img, { width: 100, height: 133, crop: 'fill' })} alt="thumbnail" className="w-full h-full object-cover" loading="lazy" />
+                  <InteractiveThumbnail src={getOptimizedImageUrl(img, { width: 100, height: 133, crop: 'fill' })} alt="thumbnail" />
                 </button>
               ))}
             </div>
@@ -446,6 +452,38 @@ const ProductDetail = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// Local component to handle smooth thumbnail fade-in
+const InteractiveThumbnail = ({ src, alt }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      onLoad={() => setIsLoaded(true)}
+      className={`w-full h-full object-cover transition-opacity duration-300 ${
+        isLoaded ? 'opacity-100' : 'opacity-0'
+      }`}
+    />
+  );
+};
+
+// Local component to handle smooth toast image fade-in
+const ToastThumbnail = ({ src, alt }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      onLoad={() => setIsLoaded(true)}
+      className={`w-full h-full object-cover transition-opacity duration-300 ${
+        isLoaded ? 'opacity-100' : 'opacity-0'
+      }`}
+    />
   );
 };
 

@@ -204,6 +204,7 @@ const AdminUpload = () => {
     description: '',
     modelInfo: '',
   });
+  const [nextCodePlaceholder, setNextCodePlaceholder] = useState('Generating next code...');
   const [colorsList, setColorsList] = useState([]); // Array of { color: string, enabled: boolean, sizeStock: object }
   const [newColorName, setNewColorName] = useState('');
 
@@ -462,6 +463,42 @@ const AdminUpload = () => {
       fetchDbCategoryBanners();
     }
   }, [activeTab, token]);
+
+  // Fetch next unique product code dynamically when category or collection changes (during creation)
+  useEffect(() => {
+    if (!showProductForm || editingProduct) return;
+
+    const { category, collection } = productForm;
+    if (!category) return;
+
+    // If category is Collection but no collection is selected yet, clear the placeholder and wait
+    if (category === 'Collection' && !collection) {
+      setNextCodePlaceholder('Select collection type...');
+      return;
+    }
+
+    const fetchNextCode = async () => {
+      setNextCodePlaceholder('Fetching next code...');
+      try {
+        const response = await fetch(
+          `${API_BASE}/api/products/next-code?category=${encodeURIComponent(category)}&collection=${encodeURIComponent(collection || '')}`,
+          {
+            credentials: 'include'
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data.nextCode) {
+            setNextCodePlaceholder(`e.g. ${data.nextCode}`);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching next code:', err);
+      }
+    };
+
+    fetchNextCode();
+  }, [showProductForm, productForm.category, productForm.collection, editingProduct, token]);
 
   // Handle redirect from header notification click (Orders)
   useEffect(() => {
@@ -1620,9 +1657,12 @@ const AdminUpload = () => {
                         name="code"
                         value={productForm.code}
                         onChange={handleProductChange}
-                        required
-                        placeholder="e.g. 22225011172"
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition text-sm"
+                        required={false}
+                        readOnly={!!editingProduct}
+                        placeholder={editingProduct ? "" : nextCodePlaceholder}
+                        className={`w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition text-sm ${
+                          editingProduct ? 'opacity-70 cursor-not-allowed bg-gray-100' : ''
+                        }`}
                       />
                     </div>
                   </div>
@@ -1669,6 +1709,23 @@ const AdminUpload = () => {
                           <option value="Summer">Summer Collection</option>
                           <option value="Fall">Fall Collection</option>
                           <option value="Winter">Winter Collection</option>
+                        </select>
+                      </div>
+                    ) : productForm.category === 'Women' || productForm.category === 'Men' ? (
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Subcategory</label>
+                        <select
+                          name="collection"
+                          value={productForm.collection}
+                          onChange={handleProductChange}
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black focus:outline-none focus:border-black transition text-sm"
+                          required
+                        >
+                          <option value="">Select Subcategory...</option>
+                          <option value="Tops">Tops & T-Shirts</option>
+                          <option value="Hoodies">Hoodies & Sweatshirts</option>
+                          <option value="Pants">Pants & Jeans</option>
+                          <option value="Jackets">Jackets & Outerwear</option>
                         </select>
                       </div>
                     ) : (
