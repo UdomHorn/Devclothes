@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { preload } from 'react-dom';
 import CollectionProductCard from '../assets/Components/CollectionProductCard';
 import API_BASE from '../config';
 import { getOptimizedImageUrl } from '../utils/cloudinary';
@@ -50,7 +51,12 @@ const Collections = () => {
           const data = await response.json();
           const targetKey = `collections_${currentCollection.toLowerCase()}`;
           const activeBanner = data.find(b => b.category.toLowerCase() === targetKey);
-          setCollectionBanner(activeBanner ? activeBanner.imageUrl : "");
+          const bannerUrl = activeBanner ? activeBanner.imageUrl : "";
+          setCollectionBanner(bannerUrl);
+
+          // Preload the collection campaign banner immediately
+          const preloadUrl = getOptimizedImageUrl(bannerUrl || config.fallbackBanner, { width: 800, height: 1067, crop: 'fill' });
+          preload(preloadUrl, { as: 'image', fetchPriority: 'high' });
         } else {
           setCollectionBanner("");
         }
@@ -124,7 +130,7 @@ const Collections = () => {
           <p className="text-gray-500 text-center py-12">No products found in the {config.title} yet. Add products to this collection in the admin panel.</p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {filteredProducts.map((prod) => (
+            {filteredProducts.map((prod, idx) => (
               <CollectionProductCard
                 key={prod.id}
                 product={prod}
@@ -132,6 +138,8 @@ const Collections = () => {
                 src={prod.images && prod.images[0]}
                 price={`$${prod.price.toFixed(2)}`}
                 title={prod.name}
+                loading={idx < 4 ? "eager" : "lazy"}
+                fetchPriority={idx < 4 ? "high" : "low"}
               />
             ))}
           </div>

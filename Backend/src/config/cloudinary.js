@@ -17,7 +17,14 @@ const storage = new CloudinaryStorage({
     folder: 'devclothes_ecommerce_products', // The folder inside Cloudinary
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'avif'],
     // Optional image optimizations on upload
-    transformation: [{ width: 1000, height: 1500, crop: 'limit' }]
+    transformation: [{ width: 1000, height: 1500, crop: 'limit' }],
+    // Pre-generate common thumbnail and responsive card sizes
+    eager: [
+      { width: 300, height: 400, crop: 'fill', quality: 'auto', fetch_format: 'auto' },
+      { width: 500, height: 667, crop: 'fill', quality: 'auto', fetch_format: 'auto' },
+      { width: 800, height: 1067, crop: 'fill', quality: 'auto', fetch_format: 'auto' },
+      { width: 100, height: 133, crop: 'fill', quality: 'auto', fetch_format: 'auto' }
+    ]
   },
 });
 
@@ -28,7 +35,13 @@ const bannerStorage = new CloudinaryStorage({
     folder: 'devclothes_ecommerce_banners', // Separate folder inside Cloudinary
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'avif'],
     // Limit to max 1920 width to prevent massive files
-    transformation: [{ width: 1920, height: 1080, crop: 'limit' }]
+    transformation: [{ width: 1920, height: 1080, crop: 'limit' }],
+    // Pre-generate sizes used by home and collection banners
+    eager: [
+      { width: 600, height: 600, crop: 'fill', quality: 'auto', fetch_format: 'auto' },
+      { width: 1200, height: 675, crop: 'fill', quality: 'auto', fetch_format: 'auto' },
+      { width: 1600, height: 900, crop: 'fill', quality: 'auto', fetch_format: 'auto' }
+    ]
   },
 });
 

@@ -1,24 +1,34 @@
 import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import HightLightCard from '../assets/Components/HightLightCard'
 import API_BASE from '../config'
 
 const Women = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+  const subcategory = searchParams.get('subcategory');
 
   useEffect(() => {
-    document.title = "Women's Collection — Devclothes";
-  }, []);
+    document.title = subcategory 
+      ? `Women's ${subcategory} — Devclothes` 
+      : "Women's Collection — Devclothes";
+  }, [subcategory]);
 
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true);
       try {
         const response = await fetch(`${API_BASE}/api/products`);
         if (response.ok) {
           const data = await response.json();
-          // Filter products for Women category
-          const womenProducts = data.filter(p => p.category === 'Women');
-          setProducts(womenProducts);
+          // Filter products for Women category, and optionally by subcategory
+          const filtered = data.filter(p => {
+            const matchesCategory = p.category === 'Women';
+            const matchesSubcategory = !subcategory || (p.collection && p.collection.toLowerCase() === subcategory.toLowerCase());
+            return matchesCategory && matchesSubcategory;
+          });
+          setProducts(filtered);
         }
       } catch (err) {
         console.error('Error fetching women products:', err);
@@ -27,12 +37,12 @@ const Women = () => {
       }
     };
     fetchProducts();
-  }, []);
+  }, [subcategory]);
 
   return (
     <div className='pt-[64px] font-roboto w-[80%] max-md:w-full mx-auto pb-16'>
       <div className='w-full text-3xl font-bold mb-8 px-1.5 py-2.5 border-b border-gray-100'>
-        Women Collection
+        Women Collection {subcategory ? `— ${subcategory === 'Tops' ? 'Tops & T-Shirts' : subcategory === 'Hoodies' ? 'Hoodies & Sweatshirts' : subcategory === 'Pants' ? 'Pants & Jeans' : subcategory === 'Jackets' ? 'Jackets & Outerwear' : subcategory}` : ''}
       </div>
       
       {loading ? (

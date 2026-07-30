@@ -18,6 +18,46 @@ const parseArray = (input) => {
   }
 };
 
+// Helper to generate the next unique, auto-incremented product code
+async function generateNextCode(category, collection) {
+  let prefix = '';
+  if (category && category.toLowerCase() === 'collection' && collection) {
+    prefix = collection.trim().toLowerCase();
+  } else if (category) {
+    prefix = category.trim().toLowerCase();
+  } else {
+    prefix = 'product';
+  }
+
+  // Clean prefix to only contain alphanumeric characters
+  prefix = prefix.replace(/[^a-z0-9]/g, '');
+
+  const searchPrefix = `${prefix}-`;
+
+  // Find all products starting with this prefix
+  const products = await Product.findAll({
+    where: {
+      code: {
+        [Op.iLike]: `${searchPrefix}%`
+      }
+    },
+    attributes: ['code']
+  });
+
+  let maxNum = 0;
+  products.forEach(p => {
+    const suffix = p.code.substring(searchPrefix.length);
+    const num = parseInt(suffix, 10);
+    if (!isNaN(num) && num > maxNum) {
+      maxNum = num;
+    }
+  });
+
+  const nextNum = maxNum + 1;
+  const paddedNum = String(nextNum).padStart(2, '0');
+  return `${searchPrefix}${paddedNum}`;
+}
+
 // @route   POST /api/products
 // @desc    Create a new product with image uploads to Cloudinary
 // @access  Private/Admin
@@ -31,7 +71,12 @@ router.post(
   ]),
   async (req, res) => {
     try {
-      const { name, price, description, modelInfo, category, code, colors, sizes, sizeStock, colorStock, collection } = req.body;
+      let { name, price, description, modelInfo, category, code, colors, sizes, sizeStock, colorStock, collection } = req.body;
+
+      // Auto-generate code if not explicitly provided or is blank
+      if (!code || code.trim() === '') {
+        code = await generateNextCode(category, collection);
+      }
 
       // Check if product code already exists
       const existingProduct = await Product.findOne({ where: { code } });
@@ -148,6 +193,25 @@ router.post('/sync-stock', async (req, res) => {
     res.status(500).json({ error: 'Server error syncing stocks.' });
   }
 });
+
+// @route   GET /api/products/next-code
+// @desc    Get next unique auto-incremented product code
+// @access  Private/Admin
+router.get(
+  '/next-code',
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const { category, collection } = req.query;
+      const nextCode = await generateNextCode(category, collection);
+      res.json({ nextCode });
+    } catch (error) {
+      console.error('Error generating next code:', error);
+      res.status(500).json({ error: 'Server error generating next code.' });
+    }
+  }
+);
 
 // @route   GET /api/products/:id
 // @desc    Get product by ID or SKU code
