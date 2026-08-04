@@ -1,0 +1,23 @@
+{
+  "name": "devclothes",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UdomHorn/E-commerce-Payment.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/UdomHorn/E-commerce-Payment/issues"
+  },
+  "homepage": "https://github.com/UdomHorn/E-commerce-Payment#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.1.2"
+  }
+}
