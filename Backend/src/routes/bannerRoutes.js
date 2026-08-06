@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Banner, CategoryBanner } = require('../models');
 const { uploadBanner, cloudinary } = require('../config/cloudinary');
+const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 
 // @route   GET /api/banners
 // @desc    Get all active banners sorted by order
@@ -21,8 +22,8 @@ router.get('/', async (req, res) => {
 
 // @route   POST /api/banners
 // @desc    Create a new banner with an image upload to Cloudinary
-// @access  Public (Will restrict with Admin Auth in Phase 6)
-router.post('/', uploadBanner.single('image'), async (req, res) => {
+// @access  Private/Admin
+router.post('/', authMiddleware, adminMiddleware, uploadBanner.single('image'), async (req, res) => {
   try {
     const { title, linkUrl, order, active } = req.body;
 
@@ -47,8 +48,8 @@ router.post('/', uploadBanner.single('image'), async (req, res) => {
 
 // @route   DELETE /api/banners/:id
 // @desc    Delete a banner by ID
-// @access  Public (Will restrict with Admin Auth in Phase 6)
-router.delete('/:id', async (req, res) => {
+// @access  Private/Admin
+router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const banner = await Banner.findByPk(id);
@@ -96,8 +97,8 @@ router.get('/categories', async (req, res) => {
 
 // @route   POST /api/banners/categories
 // @desc    Create or update category banner
-// @access  Public (Will restrict with Admin Auth in Phase 6)
-router.post('/categories', uploadBanner.single('image'), async (req, res) => {
+// @access  Private/Admin
+router.post('/categories', authMiddleware, adminMiddleware, uploadBanner.single('image'), async (req, res) => {
   try {
     const { category } = req.body;
     if (!category) {
@@ -139,8 +140,8 @@ router.post('/categories', uploadBanner.single('image'), async (req, res) => {
 
 // @route   DELETE /api/banners/categories/:category
 // @desc    Delete category banner override (revert to default)
-// @access  Public
-router.delete('/categories/:category', async (req, res) => {
+// @access  Private/Admin
+router.delete('/categories/:category', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const { category } = req.params;
     const categoryBanner = await CategoryBanner.findOne({ where: { category } });
