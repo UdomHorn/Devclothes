@@ -432,30 +432,32 @@ router.get('/order/:id', async (req, res) => {
     }
 
     // Security check:
-    // If order has userId and is requested by a logged-in user, ensure it matches.
-    // If it's a guest order, allow retrieval matching customerEmail parameter.
+    // If order belongs to a registered user, strictly require a valid JWT token matching that user.
+    // If it is a guest order, allow retrieval if the email query parameter matches.
     let isAuthorized = false;
 
-    // Check if token exists
-    const token = req.cookies?.authToken || (req.headers.authorization && req.headers.authorization.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null);
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (order.userId === decoded.id) {
-          isAuthorized = true;
+    if (order.userId) {
+      // Registered User Order: Enforce matching JWT token owner
+      const token = req.cookies?.authToken || (req.headers.authorization && req.headers.authorization.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null);
+      if (token) {
+        try {
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          if (order.userId === decoded.id) {
+            isAuthorized = true;
+          }
+        } catch (err) {
+          // Ignore token verify error
         }
-      } catch (err) {
-        // Ignore token verify error
+      }
+    } else {
+      // Guest Order: Allow email query match fallback
+      const emailQuery = req.query.email;
+      if (emailQuery && order.customerEmail.toLowerCase() === emailQuery.toLowerCase()) {
+        isAuthorized = true;
       }
     }
 
-    // Check if email query parameter matches
-    const emailQuery = req.query.email;
-    if (emailQuery && order.customerEmail.toLowerCase() === emailQuery.toLowerCase()) {
-      isAuthorized = true;
-    }
-
-    // Reject access if neither the user ID matches nor the email query matches the order email
+    // Reject access if unauthorized
     if (!isAuthorized) {
       return res.status(403).json({ error: 'Access Denied. You are not authorized to view this order receipt.' });
     }

@@ -21,6 +21,11 @@ router.post('/register', async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
+      if (existingUser.googleId && !existingUser.password) {
+        return res.status(400).json({
+          error: 'An account with this email already exists via Google Sign-In. Please log in using Google.',
+        });
+      }
       return res.status(400).json({ error: 'User with this email already exists.' });
     }
 
@@ -76,6 +81,13 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+
+    // Check if user registered via Google only (no password set)
+    if (user.googleId && !user.password) {
+      return res.status(400).json({
+        error: 'This account uses Google Sign-In. Please log in with Google — no password is needed.',
+      });
     }
 
     // Check password
