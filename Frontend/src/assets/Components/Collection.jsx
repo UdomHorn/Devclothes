@@ -27,9 +27,12 @@ const Collection = ({ src, title, loading = "lazy", fetchPriority }) => {
             }`}
           />
         ) : src === "" ? (
-          <span className="text-gray-300 font-semibold tracking-wider text-xs uppercase">No Image Set</span>
+          <div className="w-full h-full bg-gradient-to-tr from-neutral-950 to-neutral-800 flex flex-col items-center justify-center p-4 text-center select-none">
+            <span className="text-sm font-light tracking-widest font-inter text-neutral-200 uppercase mb-1">DEVCLOTHES</span>
+            <span className="text-[10px] text-neutral-500 tracking-wider font-roboto uppercase">No Banner Image Set</span>
+          </div>
         ) : (
-          <span className="text-gray-400 font-medium">Loading Banner...</span>
+          <span className="text-gray-450 font-medium">Loading Banner...</span>
         )}
       </div>
       <div className='flex justify-center items-center text-center mt-4 w-full'>
