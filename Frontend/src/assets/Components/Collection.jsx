@@ -3,12 +3,20 @@ import { getOptimizedImageUrl } from '../../utils/cloudinary'
 
 const Collection = ({ src, title, loading = "lazy", fetchPriority }) => {
   const [isLoaded, setIsLoaded] = React.useState(false);
+  const imgRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (imgRef.current && imgRef.current.complete) {
+      setIsLoaded(true);
+    }
+  }, [src]);
 
   return (
     <div className="w-full">
       <div className="w-full aspect-[4/5] bg-gray-100 flex items-center justify-center overflow-hidden">
         {src ? (
           <img
+            ref={imgRef}
             src={getOptimizedImageUrl(src, { width: 800, height: 1000, crop: 'fill' })}
             alt={title}
             loading={loading}

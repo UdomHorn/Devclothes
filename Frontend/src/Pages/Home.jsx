@@ -10,9 +10,39 @@ const Home = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(true);
   const [products, setProducts] = useState([]);
-  const [banners, setBanners] = useState(null); // start as null to prevent flash
-  const [womenBanner, setWomenBanner] = useState(null);
-  const [menBanner, setMenBanner] = useState(null);
+  const [banners, setBanners] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('devclothes_home_banners');
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (e) {}
+    return null; // start as null to prevent flash if not cached
+  });
+  
+  const [womenBanner, setWomenBanner] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('devclothes_category_banners');
+      if (cached) {
+        const data = JSON.parse(cached);
+        const women = data.find(b => b.category === 'Women');
+        if (women && women.imageUrl) return women.imageUrl;
+      }
+    } catch (e) {}
+    return 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop';
+  });
+
+  const [menBanner, setMenBanner] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('devclothes_category_banners');
+      if (cached) {
+        const data = JSON.parse(cached);
+        const men = data.find(b => b.category === 'Men');
+        if (men && men.imageUrl) return men.imageUrl;
+      }
+    } catch (e) {}
+    return 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=800&auto=format&fit=crop';
+  });
 
   // Re-enable transition after snap-back
   useEffect(() => {
@@ -53,24 +83,22 @@ const Home = () => {
         const response = await fetch(`${API_BASE}/api/banners/categories`);
         if (response.ok) {
           const data = await response.json();
+          // Cache in sessionStorage
+          sessionStorage.setItem('devclothes_category_banners', JSON.stringify(data));
+          
           const women = data.find(b => b.category === 'Women');
-          setWomenBanner(women ? women.imageUrl : "");
           if (women && women.imageUrl) {
+            setWomenBanner(women.imageUrl);
             preload(getOptimizedImageUrl(women.imageUrl, { width: 800, height: 1000, crop: 'fill' }), { as: 'image' });
           }
           const men = data.find(b => b.category === 'Men');
-          setMenBanner(men ? men.imageUrl : "");
           if (men && men.imageUrl) {
+            setMenBanner(men.imageUrl);
             preload(getOptimizedImageUrl(men.imageUrl, { width: 800, height: 1000, crop: 'fill' }), { as: 'image' });
           }
-        } else {
-          setWomenBanner("");
-          setMenBanner("");
         }
       } catch (err) {
         console.error('Failed to fetch category banners:', err);
-        setWomenBanner("");
-        setMenBanner("");
       }
     };
     fetchCategoryBanners();
@@ -87,6 +115,10 @@ const Home = () => {
             const filtered = data
                .filter(b => b.order === 1 || b.order === 2)
                .sort((a, b) => a.order - b.order);
+            
+            // Cache in sessionStorage
+            sessionStorage.setItem('devclothes_home_banners', JSON.stringify(filtered));
+            
             setBanners(filtered);
             // Preload the first hero banner image immediately
             if (filtered[0] && filtered[0].imageUrl) {

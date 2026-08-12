@@ -458,8 +458,17 @@ const ProductDetail = () => {
 // Local component to handle smooth thumbnail fade-in
 const InteractiveThumbnail = ({ src, alt }) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const imgRef = React.useRef(null);
+
+  useEffect(() => {
+    if (imgRef.current && imgRef.current.complete) {
+      setIsLoaded(true);
+    }
+  }, [src]);
+
   return (
     <img
+      ref={imgRef}
       src={src}
       alt={alt}
       loading="lazy"
@@ -474,8 +483,17 @@ const InteractiveThumbnail = ({ src, alt }) => {
 // Local component to handle smooth toast image fade-in
 const ToastThumbnail = ({ src, alt }) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const imgRef = React.useRef(null);
+
+  useEffect(() => {
+    if (imgRef.current && imgRef.current.complete) {
+      setIsLoaded(true);
+    }
+  }, [src]);
+
   return (
     <img
+      ref={imgRef}
       src={src}
       alt={alt}
       loading="lazy"
