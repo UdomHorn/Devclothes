@@ -6,6 +6,13 @@ import { getOptimizedImageUrl } from '../../utils/cloudinary'
 const HightLightCard = ({ page, src, price, title, product, loading = "lazy", fetchPriority }) => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const [isLoaded, setIsLoaded] = React.useState(false);
+  const imgRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (imgRef.current && imgRef.current.complete) {
+      setIsLoaded(true);
+    }
+  }, [src]);
 
   return (
     <div className="group">
@@ -13,6 +20,7 @@ const HightLightCard = ({ page, src, price, title, product, loading = "lazy", fe
         {/* Fixed 3:4 aspect ratio container — all cards are uniform */}
         <div className="relative w-full aspect-[3/4] overflow-hidden bg-gray-100 rounded-sm">
           <img
+            ref={imgRef}
             src={getOptimizedImageUrl(src, { width: 500, height: 667, crop: 'fill' })}
             srcSet={`
               ${getOptimizedImageUrl(src, { width: 300, height: 400, crop: 'fill' })} 300w,

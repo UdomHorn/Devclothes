@@ -4,6 +4,13 @@ import { getOptimizedImageUrl } from '../../utils/cloudinary'
 
 const CollectionProductCard = ({ page, src, price, title, product, loading = "lazy", fetchPriority }) => {
   const [isLoaded, setIsLoaded] = React.useState(false);
+  const imgRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (imgRef.current && imgRef.current.complete) {
+      setIsLoaded(true);
+    }
+  }, [src]);
 
   return (
     <div className="group relative flex flex-col bg-white">
@@ -11,6 +18,7 @@ const CollectionProductCard = ({ page, src, price, title, product, loading = "la
       <div className="relative w-full aspect-[3/4] overflow-hidden bg-gray-50 border border-gray-100/50">
         <Link to={page} className="block w-full h-full">
           <img
+            ref={imgRef}
             src={getOptimizedImageUrl(src, { width: 500, height: 667, crop: 'fill' })}
             srcSet={`
               ${getOptimizedImageUrl(src, { width: 300, height: 400, crop: 'fill' })} 300w,

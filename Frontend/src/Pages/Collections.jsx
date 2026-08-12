@@ -32,10 +32,28 @@ const Collections = () => {
   const [searchParams] = useSearchParams();
   const currentCollection = searchParams.get('type') || 'summer';
   
-  const [collectionBanner, setCollectionBanner] = useState(null);
-  const [products, setProducts] = useState([]);
-
   const config = collectionConfig[currentCollection.toLowerCase()] || collectionConfig.summer;
+  
+  // Initialize with cached banner url if available, otherwise the config fallback
+  const getInitialBanner = () => {
+    try {
+      const cached = sessionStorage.getItem('devclothes_category_banners');
+      if (cached) {
+        const data = JSON.parse(cached);
+        const targetKey = `collections_${currentCollection.toLowerCase()}`;
+        const activeBanner = data.find(b => b.category.toLowerCase() === targetKey);
+        if (activeBanner && activeBanner.imageUrl) {
+          return activeBanner.imageUrl;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse cached banners:', e);
+    }
+    return config.fallbackBanner;
+  };
+
+  const [collectionBanner, setCollectionBanner] = useState(getInitialBanner);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     document.title = `${config.title} — Devclothes`;
@@ -43,30 +61,44 @@ const Collections = () => {
 
   // Fetch Banner for active collection category
   useEffect(() => {
-    setCollectionBanner(null);
+    const targetKey = `collections_${currentCollection.toLowerCase()}`;
+    let initialUrl = config.fallbackBanner;
+    
+    try {
+      const cached = sessionStorage.getItem('devclothes_category_banners');
+      if (cached) {
+        const data = JSON.parse(cached);
+        const activeBanner = data.find(b => b.category.toLowerCase() === targetKey);
+        if (activeBanner && activeBanner.imageUrl) {
+          initialUrl = activeBanner.imageUrl;
+        }
+      }
+    } catch (e) {}
+
+    setCollectionBanner(initialUrl);
+
     const fetchCategoryBanners = async () => {
       try {
         const response = await fetch(`${API_BASE}/api/banners/categories`);
         if (response.ok) {
           const data = await response.json();
-          const targetKey = `collections_${currentCollection.toLowerCase()}`;
+          // Store in sessionStorage cache
+          sessionStorage.setItem('devclothes_category_banners', JSON.stringify(data));
+          
           const activeBanner = data.find(b => b.category.toLowerCase() === targetKey);
           const bannerUrl = activeBanner ? activeBanner.imageUrl : "";
-          setCollectionBanner(bannerUrl);
-
-          // Preload the collection campaign banner immediately
-          const preloadUrl = getOptimizedImageUrl(bannerUrl || config.fallbackBanner, { width: 800, height: 1067, crop: 'fill' });
-          preload(preloadUrl, { as: 'image', fetchPriority: 'high' });
-        } else {
-          setCollectionBanner("");
+          if (bannerUrl) {
+            setCollectionBanner(bannerUrl);
+            const preloadUrl = getOptimizedImageUrl(bannerUrl, { width: 800, height: 1067, crop: 'fill' });
+            preload(preloadUrl, { as: 'image', fetchPriority: 'high' });
+          }
         }
       } catch (err) {
         console.error('Failed to fetch category banners:', err);
-        setCollectionBanner("");
       }
     };
     fetchCategoryBanners();
-  }, [currentCollection]);
+  }, [currentCollection, config.fallbackBanner]);
 
   // Fetch all products
   useEffect(() => {
