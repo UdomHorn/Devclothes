@@ -29,7 +29,7 @@ const Home = () => {
         if (women && women.imageUrl) return women.imageUrl;
       }
     } catch (e) {}
-    return 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop';
+    return null;
   });
 
   const [menBanner, setMenBanner] = useState(() => {
@@ -41,7 +41,7 @@ const Home = () => {
         if (men && men.imageUrl) return men.imageUrl;
       }
     } catch (e) {}
-    return 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=800&auto=format&fit=crop';
+    return null;
   });
 
   // Re-enable transition after snap-back
@@ -90,15 +90,24 @@ const Home = () => {
           if (women && women.imageUrl) {
             setWomenBanner(women.imageUrl);
             preload(getOptimizedImageUrl(women.imageUrl, { width: 800, height: 1000, crop: 'fill' }), { as: 'image' });
+          } else {
+            setWomenBanner("");
           }
           const men = data.find(b => b.category === 'Men');
           if (men && men.imageUrl) {
             setMenBanner(men.imageUrl);
             preload(getOptimizedImageUrl(men.imageUrl, { width: 800, height: 1000, crop: 'fill' }), { as: 'image' });
+          } else {
+            setMenBanner("");
           }
+        } else {
+          setWomenBanner("");
+          setMenBanner("");
         }
       } catch (err) {
         console.error('Failed to fetch category banners:', err);
+        setWomenBanner("");
+        setMenBanner("");
       }
     };
     fetchCategoryBanners();

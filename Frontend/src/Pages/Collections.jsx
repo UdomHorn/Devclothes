@@ -8,23 +8,19 @@ import { getOptimizedImageUrl } from '../utils/cloudinary';
 const collectionConfig = {
   spring: {
     title: 'Spring Collection',
-    description: 'A curated collection of fresh styles and transitioning layers, designed for the warming season with lightweight materials and clean designs.',
-    fallbackBanner: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1200&auto=format&fit=crop'
+    description: 'A curated collection of fresh styles and transitioning layers, designed for the warming season with lightweight materials and clean designs.'
   },
   summer: {
     title: 'Summer Collection',
-    description: 'A curated collection of lightweight essentials and timeless silhouettes, designed with modern simplicity and effortless comfort in mind.',
-    fallbackBanner: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1200&auto=format&fit=crop'
+    description: 'A curated collection of lightweight essentials and timeless silhouettes, designed with modern simplicity and effortless comfort in mind.'
   },
   fall: {
     title: 'Fall Collection',
-    description: 'Cozy knits, deep tones, and structured outerwear. A perfect curation for cooler breezes, combining rich texture and classic comfort.',
-    fallbackBanner: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=1200&auto=format&fit=crop'
+    description: 'Cozy knits, deep tones, and structured outerwear. A perfect curation for cooler breezes, combining rich texture and classic comfort.'
   },
   winter: {
     title: 'Winter Collection',
-    description: 'Warm insulated garments, premium parkas, and protective knitwear. Build your cold-weather defense without compromising on style.',
-    fallbackBanner: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200&auto=format&fit=crop'
+    description: 'Warm insulated garments, premium parkas, and protective knitwear. Build your cold-weather defense without compromising on style.'
   }
 };
 
@@ -34,7 +30,7 @@ const Collections = () => {
   
   const config = collectionConfig[currentCollection.toLowerCase()] || collectionConfig.summer;
   
-  // Initialize with cached banner url if available, otherwise the config fallback
+  // Initialize with cached banner url if available, otherwise null
   const getInitialBanner = () => {
     try {
       const cached = sessionStorage.getItem('devclothes_category_banners');
@@ -49,7 +45,7 @@ const Collections = () => {
     } catch (e) {
       console.warn('Failed to parse cached banners:', e);
     }
-    return config.fallbackBanner;
+    return null;
   };
 
   const [collectionBanner, setCollectionBanner] = useState(getInitialBanner);
@@ -62,7 +58,7 @@ const Collections = () => {
   // Fetch Banner for active collection category
   useEffect(() => {
     const targetKey = `collections_${currentCollection.toLowerCase()}`;
-    let initialUrl = config.fallbackBanner;
+    let initialUrl = null;
     
     try {
       const cached = sessionStorage.getItem('devclothes_category_banners');
@@ -87,18 +83,21 @@ const Collections = () => {
           
           const activeBanner = data.find(b => b.category.toLowerCase() === targetKey);
           const bannerUrl = activeBanner ? activeBanner.imageUrl : "";
+          setCollectionBanner(bannerUrl);
           if (bannerUrl) {
-            setCollectionBanner(bannerUrl);
             const preloadUrl = getOptimizedImageUrl(bannerUrl, { width: 800, height: 1067, crop: 'fill' });
             preload(preloadUrl, { as: 'image', fetchPriority: 'high' });
           }
+        } else {
+          setCollectionBanner("");
         }
       } catch (err) {
         console.error('Failed to fetch category banners:', err);
+        setCollectionBanner("");
       }
     };
     fetchCategoryBanners();
-  }, [currentCollection, config.fallbackBanner]);
+  }, [currentCollection]);
 
   // Fetch all products
   useEffect(() => {
@@ -136,9 +135,14 @@ const Collections = () => {
           <div className="w-full max-w-[420px] aspect-[3/4] overflow-hidden bg-neutral-50 border border-neutral-100 shadow-md relative">
             {collectionBanner === null ? (
               <div className="w-full h-full bg-neutral-100 animate-pulse flex items-center justify-center text-xs font-semibold text-gray-400">Loading Banner...</div>
+            ) : collectionBanner === "" ? (
+              <div className="w-full h-full bg-gradient-to-tr from-neutral-950 to-neutral-800 flex flex-col items-center justify-center p-6 text-center text-white">
+                <span className="text-xl font-light tracking-widest font-inter uppercase mb-2">DEVCLOTHES</span>
+                <span className="text-xs text-neutral-400 tracking-wider font-roboto uppercase">No Campaign Image Set</span>
+              </div>
             ) : (
               <img
-                src={getOptimizedImageUrl(collectionBanner || config.fallbackBanner, { width: 800, height: 1067, crop: 'fill' })}
+                src={getOptimizedImageUrl(collectionBanner, { width: 800, height: 1067, crop: 'fill' })}
                 alt={config.title}
                 className="w-full h-full object-cover object-top"
                 loading="eager"
